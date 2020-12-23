@@ -20,6 +20,7 @@
         "emitDecoratorMetadata": true
     },
     "include": [
+        "private-dev",
         "src",
         "package.json"
     ],
