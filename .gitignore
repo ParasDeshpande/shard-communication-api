@@ -1,4 +1,5 @@
 /node_modules
 /dist
+/private-dist
 /private-dev
 package-lock.json
