@@ -1,0 +1,19 @@
+{
+    "name": "shard-communication-client",
+    "version": "1.0.0",
+    "description": "The client for shard-communication-api.",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Paras Deshpande",
+    "license": "MIT",
+    "dependencies": {
+        "events": "^3.2.0",
+        "ws": "^7.4.1"
+    },
+    "devDependencies": {
+        "@types/events": "^3.0.0",
+        "@types/ws": "^7.4.0"
+    }
+}
