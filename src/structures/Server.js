@@ -126,7 +126,7 @@ class Server extends events_1.EventEmitter {
         switch (parsedMessage.op) {
             case 'test': console.log('works');
             case 'annc':
-                if (parsedMessage.recieverFilter && parsedMessage.recieverFilter.clientid && parsedMessage.recieverFilter.shardid && parsedMessage.data && Array.isArray(parsedMessage.recieverFilter.clientid) && Array.isArray(parsedMessage.recieverFilter.shardid)) {
+                if (parsedMessage.recieverFilter && parsedMessage.recieverFilter.clientid && parsedMessage.data && Array.isArray(parsedMessage.recieverFilter.clientid) && Array.isArray(parsedMessage.recieverFilter.shardid)) {
                     const client = this.clients.find(c => c.connectionid === ws.connectionid);
                     if (!client)
                         return;
