@@ -133,7 +133,7 @@ export default class Server extends EventEmitter {
         switch (parsedMessage.op) {
             case 'test': console.log('works');
             case 'annc':
-                if (parsedMessage.recieverFilter && parsedMessage.recieverFilter.clientid && parsedMessage.data && Array.isArray(parsedMessage.recieverFilter.clientid) && Array.isArray(parsedMessage.recieverFilter.shardid)) {
+                if (parsedMessage.recieverFilter && parsedMessage.recieverFilter.clientid && parsedMessage.data && Array.isArray(parsedMessage.recieverFilter.clientid) && (parsedMessage.recieverFilter.shardid ? Array.isArray(parsedMessage.recieverFilter.shardid) : true)) {
                     const client = this.clients.find(c => c.connectionid === ws.connectionid);
                     if (!client) return;
                     this.send(client, { clientid: parsedMessage.recieverFilter.clientid, shardid: parsedMessage.recieverFilter.shardid }, parsedMessage.data);
