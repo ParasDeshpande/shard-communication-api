@@ -84,10 +84,9 @@ export default class Server extends EventEmitter {
         this.socket.on('connection', this.connection.bind(this));
         this.socket.on('close', this.close.bind(this));
         this.socket.on('error', this.error.bind(this));
-        this.socket.on('listening', this.listening.bind(this));
 
         //Start listening on the given port
-        this.server.listen(this.options.port);
+        this.server.listen(this.options.port, this.listening.bind(this, this.options.port));
     }
 
     /**
