@@ -86,14 +86,14 @@ export default class Server extends EventEmitter {
         this.socket.on('error', this.error.bind(this));
 
         //Start listening on the given port
-        this.server.listen(this.options.port, this.listening.bind(this, this.options.port));
+        this.server.listen(this.options.port, this.listening.bind(this));
     }
 
     /**
      * Server events
      */
     listening() {
-        this.emit('listening', this, arguments);
+        this.emit('listening', this, this.options.port);
     }
     connection(ws: ws, request: http.IncomingMessage) {
         this.emit('connection', this, ws, request);
