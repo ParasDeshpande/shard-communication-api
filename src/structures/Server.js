@@ -82,13 +82,13 @@ class Server extends events_1.EventEmitter {
         this.socket.on('close', this.close.bind(this));
         this.socket.on('error', this.error.bind(this));
         //Start listening on the given port
-        this.server.listen(this.options.port, this.listening.bind(this, this.options.port));
+        this.server.listen(this.options.port, this.listening.bind(this));
     }
     /**
      * Server events
      */
     listening() {
-        this.emit('listening', this, arguments);
+        this.emit('listening', this, this.options.port);
     }
     connection(ws, request) {
         this.emit('connection', this, ws, request);
