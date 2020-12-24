@@ -1,7 +1,7 @@
 import http, { RequestOptions, Server as SV } from 'http';
 import ws, { Server as WSV } from 'ws';
 import { EventEmitter } from 'events';
-import { Collection } from '@discordjs/collection';
+import Collection from '@discordjs/collection';
 import uniqid from 'uniqid';
 
 export default class Server extends EventEmitter {
@@ -69,7 +69,7 @@ export default class Server extends EventEmitter {
                     ws.on('close', (code, reason) => this.wsClose(ws, code, reason));
                     ws.on('error', (error) => this.wsError(ws, error));
                     ws.on('message', (message) => this.wsMessage(ws, message));
-                    ws.on('ping', (message) => this.wsPing(ws, message));
+                    //ws.on('ping', (message) => this.wsPing(ws, message));
                     this.socket.emit('connection', ws, req);
                 });
             }
@@ -96,8 +96,8 @@ export default class Server extends EventEmitter {
     listening() {
         this.emit('listening', this, arguments);
     }
-    connection() {
-        this.emit('connection', this, arguments);
+    connection(ws: ws, request: http.IncomingMessage) {
+        this.emit('connection', this, ws, request);
     }
     close() {
         this.emit('close', this);
@@ -112,7 +112,7 @@ export default class Server extends EventEmitter {
     wsClose(ws: ExtendedWS, code: number, reason: string) {
         //Get the connected client info
         const clientKey = this.clients.findKey(c => c.connectionid === ws.connectionid);
-        if (!clientKey) return;
+        if (typeof clientKey !== 'number') return;
 
         //Delete the connected client
         const deletedClient = this.clients.get(clientKey);
@@ -137,7 +137,7 @@ export default class Server extends EventEmitter {
                 if (parsedMessage.recieverFilter && parsedMessage.recieverFilter.clientid && parsedMessage.recieverFilter.shardid && parsedMessage.data && Array.isArray(parsedMessage.recieverFilter.clientid) && Array.isArray(parsedMessage.recieverFilter.shardid)) {
                     const client = this.clients.find(c => c.connectionid === ws.connectionid);
                     if (!client) return;
-                    this.send({ clientid: client.id, shardid: client.shard }, { clientid: parsedMessage.recieverFilter.clientid, shardid: parsedMessage.recieverFilter.shardid }, parsedMessage.data);
+                    this.send(client, { clientid: parsedMessage.recieverFilter.clientid, shardid: parsedMessage.recieverFilter.shardid }, parsedMessage.data);
                     //Emit announced event
                     this.emit('announced', this, client, parsedMessage);
                 }
@@ -146,19 +146,16 @@ export default class Server extends EventEmitter {
                 this.emit('message', this, this.clients.find(c => c.connectionid === ws.connectionid), parsedMessage);
         }
     }
-    wsPing(ws: ExtendedWS, data: ws.Data) {
-        this.emit('wsPing', this, this.clients.find(c => c.connectionid === ws.connectionid), data);
-    }
 
     /**
      * Methods
      */
-    send(sender: sender = {}, recieverFilter: recieverFilter = {}, data: object) {
+    send(sender: ConnectedClient, recieverFilter: recieverFilter = {}, data: object) {
         return new Promise((resolve, reject) => {
             //Handle errors
             if (!sender) reject("No sender");
-            if (!sender.clientid) reject("No sender clientid");
-            if (!sender.shardid) reject("No sender shardid");
+            if (!sender.id) reject("No sender clientid");
+            if (!sender.shard) reject("No sender shardid");
             if (!data || !JSON.stringify(data).startsWith("{")) return reject("no json data provided");
 
             //Handle data
@@ -166,30 +163,17 @@ export default class Server extends EventEmitter {
 
             //Get the clients to send to
             const clients = this.clients.filter(c =>
-                (
-                    typeof recieverFilter.clientid !== 'undefined'
-                        ?
-                        recieverFilter.clientid.includes(c.id)
-                        :
-                        true
-
-                        &&
-                        c.id !== sender.clientid
-                )
+                c.connectionid !== sender.connectionid
                 &&
-                (
-                    typeof recieverFilter.shardid !== 'undefined'
-                        ?
-                        recieverFilter.shardid.includes(c.shard)
-                        :
-                        true
-
-                        &&
-                        c.shard !== sender.shardid
-                )
+                (typeof recieverFilter.clientid !== 'undefined' ? recieverFilter.clientid.includes(c.id) : true)
+                &&
+                (typeof recieverFilter.shardid !== 'undefined' ? recieverFilter.shardid.includes(c.shard) : true)
             )
 
-            clients.forEach(c => c.ws.send(stringifiedData, (error) => error ? reject(error) : resolve(true)))
+            clients.forEach(c => {
+                try { c.ws.send(stringifiedData) }
+                catch (e) { console.error(e) }
+            })
         });
     }
 }
